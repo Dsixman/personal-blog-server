@@ -6,12 +6,13 @@ const User=require("../../model/user.js")
 const jwt=require("jsonwebtoken")
 const router=new Router()
 
-router.get('/',(ctx)=>{
+router.get('/auth',(ctx)=>{
     //接收用户名和密码
   //let body_data=ctx.request.body
   //let user=body_data.user
   //let pwd=body_data.pwd
    dbinit()
+   console.log("aaa")
    let user='zzh'
    let pwd='zhenghaihui123'
    let usertoken={}
