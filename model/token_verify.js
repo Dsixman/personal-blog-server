@@ -1,18 +1,22 @@
-const jwt=require("jsonwebtoken")
+const jwt=require('jsonwebtoken')
 const config=require('../conf/config')
-module.exports={
-    verify:function(){
-        let auth_token=ctx.request.headers['Auth-Token']
-        jwt.verify(auth_token, config.jwt_secret,function(err, decoded) {
-            if (err){
-                console.log(err)
-                return 'token验证失败'
-            }else{
-                let date=new Date()
-                if(date.now()/1000<decoded.exp){
-                    return  "token验证成功"
-                }
-            }
-          })
-    }
+async function verify(ctx,next){
+    console.log(ctx.request.headers["auth-token"])
+    //console.log(ctx.request.headers["Auth-Token"])
+    let token = ctx.request.headers["auth-token"]
+    let tkcontent;
+   try{
+       tkcontent=await jwt.verify(token, config.jwt_secret)} 
+   catch(err){
+    switch (err.name) {
+        case 'JsonWebTokenError':
+            ctx.throw(401,'token验证失败')
+          break;
+        case 'TokenExpiredError':
+            ctx.throw(401,'token过期')
+          break;
+      }
+   }
+    await next()
 }
+module.exports.verify=verify

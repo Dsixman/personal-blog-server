@@ -6,11 +6,20 @@ const jwt = require("jsonwebtoken")
 const config = require('./conf/config')
 const requiredir = require('require-dir')
 const cors = require("koa2-cors")
-
+const mongoose = require('mongoose');
 const routerspath = path.join(__dirname, 'api', 'v1')
-//console.log('routespath: '+routerspath)
 const routersobj = requiredir(routerspath)
-
+mongoose.connect('mongodb://localhost/personalblog', {useNewUrlParser: true,useUnifiedTopology: true });
+const db=mongoose.connection
+db.on('error', function(err){
+  if (err){
+    console.log('connect error: '+err)
+    //reject(“连接错误：”+err)
+  }
+});
+db.on('open',function(){
+  console.log('connect successed')
+})
 app.use(koabody())//接受 响应体传来的数据
 
 //跨域插件
@@ -27,34 +36,12 @@ app.use(cors({
   allowMethods: ['GET', 'POST', 'DELETE'],
   allowHeaders: ['Content-Type', 'Auth-Token', 'Accept'],
 }))
-app.use( (ctx, next)=>{
-  let token = ctx.request.headers["Auth-Token"]
-  jwt.verify(token, config.jwt_secret,function (err) {
-    if (ctx.request.url.indexOf('login')===-1){
-      if (err) {
-        switch (err.name) {
-          case 'JsonWebTokenError':
-            ctx.status=403
-            ctx.body={ code: -1, msg: '无效的token' }
-            break;
-          case 'TokenExpiredError':
-            ctx.status=403
-            ctx.body={ code: -1, msg: 'token过期' }
-            break;
-        }
-      }else{
-        return next()
-      }
-    }else{
-      return next()
-    }
-  })
-});
 
 Object.values(routersobj).forEach((item) => {
   //router=item
   app.use(item.routes(), item.allowedMethods())
 });
+
 app.on('error', (err, ctx) => {
   console.error('server error', err, ctx)
 });

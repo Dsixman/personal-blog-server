@@ -1,4 +1,3 @@
 module.exports={
-    jwt_secret:'zjdfh3423',
-
+    jwt_secret:'zjdfh3423'
 }
